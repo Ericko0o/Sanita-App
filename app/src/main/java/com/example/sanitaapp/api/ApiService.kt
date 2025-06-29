@@ -4,6 +4,7 @@ import com.example.sanitaapp.model.Planta
 import com.example.sanitaapp.model.Noticia
 import com.example.sanitaapp.model.ResumenItem
 import com.example.sanitaapp.model.LoginResponse
+import com.example.sanitaapp.model.Nindependiente
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -29,9 +30,12 @@ interface ApiService {
     @GET("api/noticias")
     suspend fun getNoticias(): List<Noticia>
 
+    @GET("api/noticias")
+    suspend fun obtenerNoticias(): List<Nindependiente>
+
     // Obtener noticia por ID
     @GET("api/noticia/{id}")
-    suspend fun getNoticiaPorId(@Path("id") id: Int): Noticia
+    suspend fun obtenerNoticiaPorId(@Path("id") id: Int): Nindependiente
 
     // Buscar planta por nombre
     @GET("api/informacion")
