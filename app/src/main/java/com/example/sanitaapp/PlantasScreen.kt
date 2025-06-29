@@ -75,19 +75,54 @@ fun PlantaCard(planta: Planta) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(modifier = Modifier.padding(16.dp)) {
-            Image(
-                painter = rememberAsyncImagePainter(
-                    ImageRequest.Builder(LocalContext.current)
-                        .data(planta.imagen)
-                        .crossfade(true)
-                        .build()
-                ),
-                contentDescription = planta.nombre,
-                modifier = Modifier
-                    .size(64.dp)
-                    .padding(end = 16.dp),
-                contentScale = ContentScale.Crop
+            // --- INICIO CÓDIGO MEJORADO PARA CARGAR IMAGEN DESDE DRAWABLE ---
+
+            // 1. Obtener solo el nombre del archivo sin la ruta del servidor (ej. "ayahuasca.jpeg")
+            val fileNameWithExtension = planta.imagen.substringAfterLast("/")
+
+            // 2. Limpiar el nombre para que sea un recurso válido de Android
+            val resourceName = fileNameWithExtension
+                .substringBeforeLast('.', missingDelimiterValue = fileNameWithExtension)
+                .replace('-', '_')
+                .lowercase()
+
+            // 3. Obtener el ID del recurso drawable
+            val context = LocalContext.current
+            val resourceId = context.resources.getIdentifier(
+                resourceName, "drawable", context.packageName
             )
+
+            // 4. Cargar la imagen usando el ID del recurso
+            if (resourceId != 0) {
+                // Si el recurso se encuentra en drawable, cárgalo localmente
+                Image(
+                    painter = rememberAsyncImagePainter(model = resourceId), // <-- Carga local
+                    contentDescription = planta.nombre,
+                    modifier = Modifier
+                        .size(64.dp)
+                        .padding(end = 16.dp),
+                    contentScale = ContentScale.Crop
+                )
+                Log.d("PlantasScreen", "Imagen '$resourceName' cargada desde drawable. ID: $resourceId")
+            } else {
+                // Si el recurso NO se encuentra, muestra un log de error y una imagen de placeholder
+                Log.e("PlantasScreen", "ERROR: Recurso no encontrado. Buscando '$resourceName' en drawable. " +
+                        "Asegúrate de que el archivo '$fileNameWithExtension' existe en res/drawable " +
+                        "y su nombre es '${resourceName}.*'")
+
+                // Opcional: Muestra una imagen de placeholder para que no quede vacío
+                // Asegúrate de tener un archivo llamado `placeholder_image.png` en `res/drawable`
+                Image(
+                    painter = rememberAsyncImagePainter(model = R.drawable.ic_launcher_foreground), // Usa un ícono por defecto
+                    contentDescription = "Imagen no encontrada",
+                    modifier = Modifier
+                        .size(64.dp)
+                        .padding(end = 16.dp),
+                    contentScale = ContentScale.Crop
+                )
+            }
+            // --- FIN CÓDIGO MEJORADO ---
+
             Column {
                 Text(text = planta.nombre, style = MaterialTheme.typography.titleMedium)
                 Text(text = "ID: ${planta.id}", style = MaterialTheme.typography.bodySmall)
