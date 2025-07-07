@@ -4,6 +4,6 @@ data class Planta(
     val id: Int,
     val nombre: String,
     val imagen: String,
-    val precio: Double, // Precio
+    val precio: Int, // Precio
     val categoria: Int, // Nueva campo para la categoría
 )

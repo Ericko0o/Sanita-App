@@ -9,18 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button // Use material3 Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextFieldDefaults // Importar OutlinedTextFieldDefaults
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,7 +25,7 @@ import com.example.sanitaapp.R
 import com.example.sanitaapp.api.ApiClient
 import com.example.sanitaapp.model.Planta
 import kotlinx.coroutines.launch
-import androidx.compose.material3.ButtonDefaults
+
 private const val CATEGORIA_CICATRIZANTES = 1
 private const val CATEGORIA_INMUNOLOGICO = 2
 
@@ -47,65 +36,65 @@ fun CatalogoScreen() {
     var plantas by remember { mutableStateOf<List<Planta>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var selectedCategory by remember { mutableStateOf<Int?>(CATEGORIA_CICATRIZANTES) } // Cicatrizantes por defecto
+    var selectedCategory by remember { mutableStateOf<Int?>(null) }
     var searchText by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             try {
                 plantas = ApiClient.apiService.getPlantas()
-                println("CATEGORÍAS: " + plantas.map { it.nombre + ": " + it.categoria })
-
+                println("🪴 Plantas cargadas:")
+                plantas.forEach {
+                    println("${it.nombre} - categoría: ${it.categoria} - precio: ${it.precio}")
+                }
                 isLoading = false
             } catch (e: Exception) {
-                errorMessage = "Error loading plants: ${e.localizedMessage}"
+                errorMessage = "Error al cargar las plantas: ${e.localizedMessage}"
                 isLoading = false
             }
         }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Background Image
         Image(
             painter = painterResource(id = R.drawable.fondocatalogo),
-            contentDescription = "Background",
+            contentDescription = "Fondo",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.FillBounds
         )
 
         Column(modifier = Modifier.fillMaxSize()) {
-            // Top AppBar (Customized for title positioning)
             TopAppBar(
                 title = {
                     Text(
                         "Productos",
                         style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                         color = Color.White,
-                        modifier = Modifier.padding(start = 16.dp) // Ajustar padding del título si es necesario
+                        modifier = Modifier.padding(start = 16.dp)
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
 
-            // Search Bar
             OutlinedTextField(
                 value = searchText,
                 onValueChange = { searchText = it },
                 label = { Text("Buscar plantas...", color = Color.White) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.White) },
+                leadingIcon = {
+                    Icon(Icons.Default.Search, contentDescription = "Buscar", tint = Color.White)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .clip(RoundedCornerShape(8.dp)), // Bordes redondeados
-                colors = OutlinedTextFieldDefaults.colors( // Usar OutlinedTextFieldDefaults.colors
-                    focusedContainerColor = Color.Transparent, // Color de fondo cuando está enfocado
-                    unfocusedContainerColor = Color.Transparent, // Color de fondo cuando no está enfocado
-                    focusedBorderColor = Color.White, // Color del borde cuando está enfocado
-                    unfocusedBorderColor = Color.Gray, // Color del borde cuando no está enfocado
-                    cursorColor = Color.White, // Color del cursor
-                    focusedTextColor = Color.White, // Color del texto cuando está enfocado
-                    unfocusedTextColor = Color.White, // Color del texto cuando no está enfocado
-                    // Si necesitas cambiar el color del label o el ícono:
+                    .clip(RoundedCornerShape(8.dp)),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedBorderColor = Color.White,
+                    unfocusedBorderColor = Color.Gray,
+                    cursorColor = Color.White,
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
                     focusedLabelColor = Color.White,
                     unfocusedLabelColor = Color.Gray,
                     focusedLeadingIconColor = Color.White,
@@ -113,7 +102,6 @@ fun CatalogoScreen() {
                 )
             )
 
-            // Filter Buttons
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -121,9 +109,7 @@ fun CatalogoScreen() {
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 Button(
-                    onClick = {
-                        selectedCategory = if (selectedCategory == CATEGORIA_CICATRIZANTES) null else CATEGORIA_CICATRIZANTES
-                    },
+                    onClick = { selectedCategory = CATEGORIA_CICATRIZANTES },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (selectedCategory == CATEGORIA_CICATRIZANTES) Color(0xFF4CAF50) else Color.Gray
                     )
@@ -132,14 +118,21 @@ fun CatalogoScreen() {
                 }
 
                 Button(
-                    onClick = {
-                        selectedCategory = if (selectedCategory == CATEGORIA_INMUNOLOGICO) null else CATEGORIA_INMUNOLOGICO
-                    },
+                    onClick = { selectedCategory = CATEGORIA_INMUNOLOGICO },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (selectedCategory == CATEGORIA_INMUNOLOGICO) Color(0xFF4CAF50) else Color.Gray
                     )
                 ) {
-                    Text("Sistema Inmunológico", color = Color.White)
+                    Text("Inmunológicos", color = Color.White)
+                }
+
+                Button(
+                    onClick = { selectedCategory = null },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (selectedCategory == null) Color(0xFF4CAF50) else Color.Gray
+                    )
+                ) {
+                    Text("Todos", color = Color.White)
                 }
             }
 
@@ -147,26 +140,37 @@ fun CatalogoScreen() {
 
             when {
                 isLoading -> {
-                    // ... (código de isLoading)
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Color.White)
+                    }
                 }
+
                 errorMessage != null -> {
-                    // ... (código de errorMessage)
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(errorMessage ?: "Error desconocido", color = Color.White)
+                    }
                 }
+
                 else -> {
-                    // Mover la lógica de filtrado aquí para que se recalcule con los cambios
                     val filteredPlantas = plantas.filter { planta ->
-                        val matchesCategory = selectedCategory?.let { planta.categoria == it } ?: true
-                        val matchesSearch = planta.nombre.contains(searchText, ignoreCase = true)
-                        matchesCategory && matchesSearch
+                        val matchCategory = selectedCategory?.let { it == planta.categoria } ?: true
+                        val matchSearch = planta.nombre.contains(searchText, ignoreCase = true)
+                        matchCategory && matchSearch
                     }
 
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp)
-                    ) {
-                        items(filteredPlantas) { planta ->
-                            PlantaItem(planta)
+                    if (filteredPlantas.isEmpty()) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("No se encontraron plantas.", color = Color.White)
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp)
+                        ) {
+                            items(filteredPlantas) { planta ->
+                                PlantaItem(planta)
+                            }
                         }
                     }
                 }
@@ -189,7 +193,6 @@ fun PlantaItem(planta: Planta) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Plant Image
             val context = LocalContext.current
             val resourceName = planta.imagen
                 .substringAfterLast("/")
@@ -207,11 +210,10 @@ fun PlantaItem(planta: Planta) {
                     contentDescription = planta.nombre,
                     modifier = Modifier
                         .size(80.dp)
-                        .clip(RoundedCornerShape(4.dp)), // Bordes redondeados para la imagen
+                        .clip(RoundedCornerShape(4.dp)),
                     contentScale = ContentScale.Crop
                 )
             } else {
-                // Placeholder if image not found
                 Box(
                     modifier = Modifier
                         .size(80.dp)
@@ -219,25 +221,23 @@ fun PlantaItem(planta: Planta) {
                         .clip(RoundedCornerShape(4.dp)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Image not found", fontSize = 10.sp, color = Color.White)
+                    Text("Imagen no encontrada", fontSize = 10.sp, color = Color.White)
                 }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = planta.nombre, style = MaterialTheme.typography.titleMedium)
-                // Mostrar el precio real
-                Text(text = "S/. ${planta.precio}", style = MaterialTheme.typography.bodySmall)
+                Text(text = planta.nombre, style = MaterialTheme.typography.titleMedium, color = Color.White)
+                Text(text = "S/. ${planta.precio}", style = MaterialTheme.typography.bodySmall, color = Color.White)
             }
 
-            // Shopping Cart Icon
             Icon(
                 painter = painterResource(id = R.drawable.carrito),
-                contentDescription = "Add to Cart",
+                contentDescription = "Agregar al carrito",
                 modifier = Modifier
                     .size(24.dp)
-                    .clickable { /* TODO: Implement add to cart */ } // Hacer el ícono clickable
+                    .clickable { /* TODO: Agregar funcionalidad */ }
             )
         }
     }
